@@ -13,13 +13,22 @@ $student_name = isset($_SESSION['student_name']) ? htmlspecialchars($_SESSION['s
 $student_matricule = $_SESSION['student_matricule'];
 
 // Handle form submission to insert a new request
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['filename'], $_POST['filetype'])) {
-    $filename = $_POST['filename'];
-    $filetype = $_POST['filetype'];
+try {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['filename'], $_POST['filetype'])) {
+        $filename = $_POST['filename'];
+        $filetype = $_POST['filetype'];
 
-    // Call function to insert new request into database
-    insertStudentRequest($student_matricule, $filename, $filetype);
+        // Call function to insert new request into database
+        insertStudentRequest($student_matricule, $filename, $filetype);
+    } else {
+        throw new Exception("Invalid request or missing parameters.");
+    }
+} catch (Exception $e) {
+    // Log the error and provide a user-friendly message
+    error_log("Error: " . $e->getMessage());
+    echo "An error occurred while processing your request. Please try again.";
 }
+
 
 // Fetch student requests
 $requests = fetchStudentRequests($student_matricule);
