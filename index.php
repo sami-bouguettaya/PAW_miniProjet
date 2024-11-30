@@ -4,49 +4,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/index.css">
-    <title>Student Login</title>
+    <title>Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(to right, #74ebd5, #9face6);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            width: 400px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            background-color: #4e73df;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .btn-primary {
+            background-color: #4e73df;
+            border: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-primary:hover {
+            background-color: #375a7f;
+        }
+
+        .form-control:focus {
+            border-color: #4e73df;
+            box-shadow: 0 0 5px rgba(78, 115, 223, 0.5);
+        }
+    </style>
 </head>
 
 <body>
-
-    <div class="container" id="container">
-        <div class="form-container sign-up">
-        <form action="db/login.php" method="POST">
-    <input type="text" name="admin_id" placeholder="Admin ID" required>
-    <input type="password" name="admin_password" placeholder="Password" required>
-    <button type="submit" name="login_admin">Sign In</button>
-</form>
-
-</form>
-
+    <div class="card">
+        <div class="card-header">
+            Login
         </div>
-        <div class="form-container sign-in">
+        <div class="card-body">
+            <h5 class="text-center mb-4">Sign In</h5>
+
+            <!-- Display error message if set -->
+            <?php
+            session_start();
+            if (isset($_SESSION['error_message'])) {
+                echo '<div class="alert alert-danger" role="alert">' . $_SESSION['error_message'] . '</div>';
+                unset($_SESSION['error_message']); // Clear the error message after displaying it
+            }
+            ?>
+
+            <!-- Unified Login Form -->
             <form action="db/login.php" method="POST">
-                <h1>Student</h1>
-                <span>Use your matricule and password</span>
-                <input type="text" name="student_matricule" placeholder="Matricule" required>
-                <input type="password" name="student_password" placeholder="Password" required>
-                <button type="submit" name="login_student">Sign In</button>
+                <div class="mb-3">
+                    <label for="identifier" class="form-label">Identifier (Matricule or Admin ID)</label>
+                    <input type="text" class="form-control" id="identifier" name="identifier" placeholder="Enter your Matricule or Admin ID" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Sign In</button>
             </form>
-        </div>
-        <div class="toggle-container">
-            <div class="toggle">
-                <div class="toggle-panel toggle-left">
-                    <h1>Welcome Admin!</h1>
-                    <button class="hidden" id="login">Student</button>
-                </div>
-                <div class="toggle-panel toggle-right">
-                    <h1>Hello, Student!</h1>
-                    <p>Register with your personal details to use all of the site features</p>
-                    <button class="hidden" id="register">Admin</button>
-                </div>
-            </div>
         </div>
     </div>
 
-    <script src="assets/js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
+
+

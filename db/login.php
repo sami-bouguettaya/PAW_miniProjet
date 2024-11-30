@@ -7,56 +7,43 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Database configuration
-$host = 'localhost';
-$dbname = 'paw';
-$username = 'root';
-$password = 'sami12345'; // Replace with your actual database password
+include("db.php");  // Make sure this file connects to your DB
 
-// Connect to the database
-$conn = new mysqli($host, $username, $password, $dbname);
-
-// Check the connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+// Initialize error message variable
+$error_message = "";
 
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['login_admin'])) {
-        // Admin login
-        $admin_id = $conn->real_escape_string($_POST['admin_id']);
-        $admin_password = $conn->real_escape_string($_POST['admin_password']);
+    // Retrieve user inputs
+    $identifier = $conn->real_escape_string($_POST['identifier']);
+    $password = $conn->real_escape_string($_POST['password']);
 
-        // Query to check admin credentials
-        $query = "SELECT * FROM admin WHERE id = '$admin_id'";
-        $result = $conn->query($query);
+    // Check if the identifier is for an admin or student
+    // Check admin first
+    $query_admin = "SELECT * FROM admin WHERE id = '$identifier'";
+    $result_admin = $conn->query($query_admin);
 
-        if ($result->num_rows > 0) {
-            $admin = $result->fetch_assoc();
-            if ($admin_password === $admin['password']) {
-                // Set session for the admin
-                $_SESSION['admin_id'] = $admin_id;
-                $_SESSION['role'] = 'admin';
-                header("Location: ../pages/admin.php");
-                exit();
-            } else {
-                echo "Invalid Admin Password.";
-            }
+    if ($result_admin->num_rows > 0) {
+        // Admin found
+        $admin = $result_admin->fetch_assoc();
+        if ($password === $admin['password']) {
+            // Set session for the admin
+            $_SESSION['admin_id'] = $admin['id'];
+            $_SESSION['role'] = 'admin';
+            header("Location: ../pages/admin.php");
+            exit();
         } else {
-            echo "Admin ID not found.";
+            $error_message = "Invalid Admin Password.";
         }
-    } elseif (isset($_POST['login_student'])) {
-        // Student login
-        $student_matricule = $conn->real_escape_string($_POST['student_matricule']);
-        $student_password = $conn->real_escape_string($_POST['student_password']);
+    } else {
+        // Admin not found, check if it's a student
+        $query_student = "SELECT * FROM etudiant WHERE matricule = '$identifier'";
+        $result_student = $conn->query($query_student);
 
-        // Query to check student credentials
-        $query = "SELECT * FROM etudiant WHERE matricule = '$student_matricule'";
-        $result = $conn->query($query);
-
-        if ($result->num_rows > 0) {
-            $student = $result->fetch_assoc();
-            if ($student_password === $student['password']) {
+        if ($result_student->num_rows > 0) {
+            // Student found
+            $student = $result_student->fetch_assoc();
+            if ($password === $student['password']) {
                 // Set session for the student
                 $_SESSION['student_matricule'] = $student['matricule'];
                 $_SESSION['student_name'] = $student['name'];
@@ -64,13 +51,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: ../pages/etudiant.php");
                 exit();
             } else {
-                echo "Invalid Student Password.";
+                $error_message = "Invalid Student Password.";
             }
         } else {
-            echo "Matricule not found.";
+            $error_message = "Identifier not found.";
         }
-    } else {
-        echo "No login type specified.";
+    }
+
+    // If an error message exists, pass it to the login page
+    if (!empty($error_message)) {
+        // Store the error message in a session variable to use on the login page
+        $_SESSION['error_message'] = $error_message;
+        header("Location: ../index.php"); // Redirect to the login page
+        exit();
     }
 } else {
     echo "Invalid request method.";
@@ -79,4 +72,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Close the database connection
 $conn->close();
 ?>
-
