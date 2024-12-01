@@ -1,10 +1,6 @@
-
-
-
 <?php
 session_start();
 require_once 'fonction_et.php';
-
 
 // Vérifie si l'utilisateur est connecté
 if (!isset($_SESSION['student_matricule'])) {
@@ -24,14 +20,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $filetype = $_POST['filetype'];
     $filedata = '';
 
+    // Vérifie si un fichier a été envoyé
     if (isset($_FILES['filedata']) && $_FILES['filedata']['error'] === UPLOAD_ERR_OK) {
-        $filedata = file_get_contents($_FILES['filedata']['tmp_name']);
+        $fileTmpPath = $_FILES['filedata']['tmp_name'];
+        $fileName = $_FILES['filedata']['name'];
+        $uploadDir = 'uploads/'; // Répertoire pour enregistrer les fichiers
+        $filePath = $uploadDir . basename($fileName);
+        
+        // Déplace le fichier vers le répertoire voulu
+        if (move_uploaded_file($fileTmpPath, $filePath)) {
+            $message = "Le fichier a été téléchargé avec succès.";
+
+            // Insère la demande dans la base de données
+            $status = 'Pending'; // Statut par défaut
+            $date_de_Depot = date('Y-m-d'); // Date actuelle
+            $message = insertStudentRequest($student_matricule, $filename, $filetype, $status, $date_de_Depot, $filePath);
+        } else {
+            $message = "Erreur lors de l'envoi du fichier.";
+        }
     } else {
         $message = "Erreur lors de l'envoi du fichier.";
-    }
-
-    if ($filedata) {
-        $message = insertStudentRequest($student_matricule, $filename, $filetype, $filedata);
     }
 }
 ?>
@@ -107,6 +115,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <button type="submit" class="btn btn-success">Envoyer</button>
                 </form>
+                <?php if (isset($message)) { ?>
+                    <div class="alert alert-info mt-3"><?= htmlspecialchars($message); ?></div>
+                <?php } ?>
             </div>
         </div>
     </div>
@@ -116,15 +127,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
