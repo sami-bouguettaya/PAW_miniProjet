@@ -1,166 +1,121 @@
+
+
+
+<?php
+session_start();
+require_once 'fonction_et.php';
+
+
+// Vérifie si l'utilisateur est connecté
+if (!isset($_SESSION['student_matricule'])) {
+    header("Location: ../db/login.php");
+    exit();
+}
+
+$student_matricule = $_SESSION['student_matricule'];
+$student_name = $_SESSION['student_name'];
+
+// Récupère les demandes
+$requests = fetchStudentRequests($student_matricule);
+
+// Gestion du formulaire
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $filename = $_POST['filename'];
+    $filetype = $_POST['filetype'];
+    $filedata = '';
+
+    if (isset($_FILES['filedata']) && $_FILES['filedata']['error'] === UPLOAD_ERR_OK) {
+        $filedata = file_get_contents($_FILES['filedata']['tmp_name']);
+    } else {
+        $message = "Erreur lors de l'envoi du fichier.";
+    }
+
+    if ($filedata) {
+        $message = insertStudentRequest($student_matricule, $filename, $filetype, $filedata);
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../assets/css/all.min.css">
+    <title>Student Space</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>Espace Étudiant</title>
     <style>
-        body {
-            background: linear-gradient(to right, #e2e2e2, #c9d6ff);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        .header {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 15px;
-            backdrop-filter: blur(10px);
-        }
-
-        .header h1 {
-            font-size: 2rem;
-        }
-
-        .header .btn {
-            background: #ff6f61;
-            border: none;
-            transition: 0.3s;
-        }
-
-        .header .btn:hover {
-            background: #e65a50;
-        }
-
-        .container-card {
-            background-color: #fff;
-            color: #333;
-            border-radius: 15px;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            flex-grow: 1; /* Permet à cette section de s'étendre pour combler l'espace disponible */
-        }
-
-        table th, table td {
-            text-align: center;
-        }
-
-        .form-control, .form-select {
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        button {
-            border-radius: 20px;
-            padding: 10px 20px;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            transform: scale(1.05);
-            background-color: #218838;
-        }
-
-        footer {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.7);
-            background-color: #4e73df;
-            padding: 10px 0;
-            margin-top: auto; /* Place le footer en bas lorsque le contenu principal est insuffisant */
-        }
+        body { background: linear-gradient(to right, #e2e2e2, #c9d6ff); }
+        .header { padding: 15px; background: rgba(255, 255, 255, 0.8); }
+        footer { margin-top: 30px; text-align: center; color: #555; }
     </style>
 </head>
 <body>
-    <!-- Header Section -->
     <div class="container my-4">
         <div class="header d-flex justify-content-between align-items-center">
-            <h1><i class="fas fa-user-graduate"></i> Bienvenue, <?= $student_name; ?> !</h1>
+            <h1>Bienvenue, <?= htmlspecialchars($student_name); ?> !</h1>
             <a href="../index.php" class="btn btn-danger">Déconnexion</a>
         </div>
     </div>
-
-    <!-- Main Container -->
-    <div class="container">
-        <div class="container-card">
-            <h2 class="text-center mb-4"><i class="fas fa-folder-open"></i> Vos Demandes de Documents</h2>
-            <!-- Table for Viewing Requests -->
-            <table class="table table-bordered table-striped table-hover">
-                <thead class="table-primary">
-                    <tr>
-                        <th>Nom du Fichier</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Date de Dépôt</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (!empty($requests)) { ?>
-                        <?php foreach ($requests as $request) { ?>
-                            <tr>
-                                <td><?= htmlspecialchars($request['filename']); ?></td>
-                                <td><?= htmlspecialchars($request['filetype']); ?></td>
-                                <td>
-                                    <?php if ($request['status'] === 'Pending') { ?>
-                                        <span class="badge bg-warning text-dark">Pending</span>
-                                    <?php } elseif ($request['status'] === 'Approved') { ?>
-                                        <span class="badge bg-success">Approved</span>
-                                    <?php } else { ?>
-                                        <span class="badge bg-danger">Rejected</span>
-                                    <?php } ?>
-                                </td>
-                                <td><?= htmlspecialchars($request['date_de_Depot']); ?></td>
-                            </tr>
+    <div class="container mt-4">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#requests">Vos demandes</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#new-request">Nouvelle demande</button>
+            </li>
+        </ul>
+        <div class="tab-content mt-4">
+            <div class="tab-pane fade show active" id="requests">
+                <h2>Vos demandes</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr><th>Nom</th><th>Type</th><th>Status</th><th>Date</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($requests)) {
+                            foreach ($requests as $request) { ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($request['filename']); ?></td>
+                                    <td><?= htmlspecialchars($request['filetype']); ?></td>
+                                    <td><?= htmlspecialchars($request['status']); ?></td>
+                                    <td><?= htmlspecialchars($request['date_de_Depot']); ?></td>
+                                </tr>
+                            <?php }
+                        } else { ?>
+                            <tr><td colspan="4">Aucune demande trouvée.</td></tr>
                         <?php } ?>
-                    <?php } else { ?>
-                        <tr>
-                            <td colspan="4" class="text-muted text-center">Aucune demande trouvée.</td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-
-            <!-- Form for Submitting a New Request -->
-            <div class="mt-5">
-                <h2 class="text-center mb-3"><i class="fas fa-plus-circle"></i> Nouvelle Demande</h2>
-                <form method="POST" action="">
-                    <div class="mb-4">
-                        <label for="request-type" class="form-label">Type de Demande</label>
-                        <select id="request-type" name="filetype" class="form-select" required>
-                            <option value="certificate">Certificat de scolarité</option>
+                    </tbody>
+                </table>
+            </div>
+            <div class="tab-pane fade" id="new-request">
+                <h2>Soumettre une nouvelle demande</h2>
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="filetype" class="form-label">Type</label>
+                        <select id="filetype" name="filetype" class="form-select" required>
+                            <option value="certificate">Certificat</option>
                             <option value="transcript">Relevé de notes</option>
-                            <option value="attestation">Attestation de conduite</option>
                         </select>
                     </div>
-                    <div class="mb-4">
-                        <label for="filename" class="form-label">Nom du Fichier</label>
-                        <input type="text" id="filename" name="filename" class="form-control" placeholder="Nom du fichier demandé" required>
+                    <div class="mb-3">
+                        <label for="filename" class="form-label">Nom du fichier</label>
+                        <input type="text" id="filename" name="filename" class="form-control" required>
                     </div>
-                    <div class="text-center">
-                        <button type="submit" class="btn btn-success btn-lg">Soumettre la Demande</button>
+                    <div class="mb-3">
+                        <label for="filedata" class="form-label">Fichier</label>
+                        <input type="file" id="filedata" name="filedata" class="form-control" required>
                     </div>
+                    <button type="submit" class="btn btn-success">Envoyer</button>
                 </form>
             </div>
         </div>
     </div>
-
     <footer>
-        <p>&copy; 2024 Portail Étudiant. Tous droits réservés.</p>
+        <p>&copy; 2024 Portail étudiant</p>
     </footer>
-
-    <script src="../assets/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
 
 
 

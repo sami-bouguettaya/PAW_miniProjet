@@ -1,3 +1,12 @@
+<?php
+// Include the database connection and the function to fetch submissions
+include("../db/admin_bd.php");
+
+
+// Fetch submissions from the database
+$submissions = fetchSubmissions();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -14,8 +23,9 @@
             flex-direction: column;
             min-height: 100vh;
         }
+
         main {
-            flex: 1; /* Prend tout l'espace restant entre le header et le footer */
+            flex: 1; /* Takes remaining space between header and footer */
         }
     </style>
 </head>
@@ -100,5 +110,3 @@
 </body>
 
 </html>
-
-
