@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once 'fonction_et.php';
+require_once '../db/etudiant_fct.php';
 
 // Vérifie si l'utilisateur est connecté
 if (!isset($_SESSION['student_matricule'])) {
