@@ -4,37 +4,31 @@ include '../db/admin_bd.php';
 // Check if the request method is POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate the input
-    if (isset($_POST['id_etud'], $_POST['status'])) {
-        $id_etud = intval($_POST['id_etud']); // Ensure id_etud is an integer
-        $status = $conn->real_escape_string($_POST['status']); // Sanitize input to prevent SQL injection
-
-        // Prepare the SQL statement to update the status
-        $sql = "UPDATE documents SET status = ? WHERE id_etud = ?";
+    if (isset($_POST['id_file'], $_POST['status'])) {
+        $id_file = intval($_POST['id_file']); // Assurez-vous que c'est un entier
+        $status = $conn->real_escape_string($_POST['status']); // Protection contre l'injection SQL
+    
+        $sql = "UPDATE documents SET status = ? WHERE id_file = ?";
         $stmt = $conn->prepare($sql);
-
+    
         if ($stmt) {
-            // Bind parameters and execute the statement
-            $stmt->bind_param("si", $status, $id_etud);
-
+            $stmt->bind_param("si", $status, $id_file);
+    
             if ($stmt->execute()) {
-                // Redirect back to admin panel on success
                 header("Location: ../pages/admin.php");
                 exit;
             } else {
-                // Error handling for query execution
-                echo "Error updating record: " . $stmt->error;
+                echo "Erreur lors de la mise à jour : " . $stmt->error;
             }
-
-            // Close the prepared statement
+    
             $stmt->close();
         } else {
-            // Error handling for SQL preparation
-            echo "Failed to prepare statement: " . $conn->error;
+            echo "Erreur de préparation de la requête : " . $conn->error;
         }
     } else {
-        // Input validation failed
-        echo "Invalid input data.";
+        echo "Données invalides.";
     }
+    
 } else {
     // Reject non-POST requests
     echo "Invalid request method.";

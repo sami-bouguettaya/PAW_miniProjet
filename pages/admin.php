@@ -105,10 +105,10 @@ $submissions = fetchSubmissions();
                                 <td><?= htmlspecialchars($row['name']); ?></td>
                                 <td><?= htmlspecialchars($row['last_name']); ?></td>
                                 <td>
-                                    <a href="../uploads/<?= htmlspecialchars($row['filename']); ?>" 
-                                       class="text-decoration-none text-primary" target="_blank">
-                                       <i class="fas <?= pathinfo($row['filename'], PATHINFO_EXTENSION) === 'pdf' ? 'fa-file-pdf' : 'fa-file'; ?>"></i> 
-                                       <?= htmlspecialchars($row['filename']); ?>
+                                    <a href="../uploads/<?= htmlspecialchars($row['filename']); ?>"
+                                        class="text-decoration-none text-primary" target="_blank">
+                                        <i class="fas <?= pathinfo($row['filename'], PATHINFO_EXTENSION) === 'pdf' ? 'fa-file-pdf' : 'fa-file'; ?>"></i>
+                                        <?= htmlspecialchars($row['filename']); ?>
                                     </a>
                                 </td>
                                 <td><?= htmlspecialchars($row['filetype']); ?></td>
@@ -123,26 +123,25 @@ $submissions = fetchSubmissions();
                                 </td>
                                 <td><?= htmlspecialchars($row['date_de_Depot']); ?></td>
                                 <td>
-                                    <form action="update_status.php" method="POST" class="d-flex justify-content-center align-items-center gap-2">
-                                        <input type="hidden" name="id_etud" value="<?= htmlspecialchars($row['id_etud']); ?>">
-                                        <select name="status" class="form-select form-select-sm w-auto" required>
+                                    <form action="update_status.php" method="POST">
+                                        <input type="hidden" name="id_file" value="<?= htmlspecialchars($row['id_file']); ?>">
+                                        <select name="status" required>
                                             <option value="Pending" <?= $row['status'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
                                             <option value="Approved" <?= $row['status'] === 'Approved' ? 'selected' : ''; ?>>Approved</option>
                                             <option value="Rejected" <?= $row['status'] === 'Rejected' ? 'selected' : ''; ?>>Rejected</option>
                                         </select>
-                                        <button type="submit" class="btn btn-success btn-sm btn-update">
-                                            <i class="fas fa-check"></i> Update
-                                        </button>
+                                        <button type="submit" class="btn btn-success btn-sm">Mettre à jour</button>
                                     </form>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="7" class="text-muted">Aucune soumission trouvée.</td>
+                            <td colspan="7">Aucune soumission trouvée.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
+
             </table>
         </div>
     </main>

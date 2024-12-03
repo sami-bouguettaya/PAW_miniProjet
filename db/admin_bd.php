@@ -9,22 +9,23 @@ function fetchSubmissions()
         SELECT 
             e.name, 
             e.last_name, 
+            d.id_file, 
             d.filename, 
             d.filetype, 
             d.status, 
-            d.date_de_Depot, 
-            d.id_etud
+            d.date_de_Depot
         FROM documents d
         INNER JOIN etudiant e ON d.id_etud = e.matricule";
 
     $result = $conn->query($sql);
 
-    // Check if the query failed
     if (!$result) {
-        die("Query failed: " . $conn->error);
+        die("Erreur lors de l'exécution de la requête : " . $conn->error);
     }
 
     return $result;
 }
+
+
 ?>
 
