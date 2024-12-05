@@ -2,8 +2,11 @@
 // Include the database connection and the function to fetch submissions
 include("../db/admin_bd.php");
 
-// Fetch submissions from the database
-$submissions = fetchSubmissions();
+// Récupérer le tri depuis l'URL (par défaut : par nom)
+$sort = $_GET['sort'] ?? 'name';
+
+// Fetch submissions from the database en fonction du tri choisi
+$submissions = fetchSubmissions($sort);
 ?>
 
 <!DOCTYPE html>
@@ -85,6 +88,16 @@ $submissions = fetchSubmissions();
         <h2 class="text-center mb-4 text-primary">
             <i class="fas fa-file-alt"></i> Gestion des Soumissions
         </h2>
+
+        <!-- Dropdown pour le tri -->
+        <form method="GET" class="d-flex justify-content-end mb-3">
+            <label for="sort" class="me-2">Trier par :</label>
+            <select name="sort" id="sort" class="form-select w-auto" onchange="this.form.submit()">
+                <option value="name" <?= $sort === 'name' ? 'selected' : ''; ?>>Nom</option>
+                <option value="date" <?= $sort === 'date' ? 'selected' : ''; ?>>Date de dépôt</option>
+            </select>
+        </form>
+
         <div class="table-responsive">
             <table class="table table-striped table-bordered text-center align-middle">
                 <thead class="table-primary">
@@ -121,7 +134,7 @@ $submissions = fetchSubmissions();
                                         <span class="badge bg-danger">Rejected</span>
                                     <?php endif; ?>
                                 </td>
-                                <td><?= htmlspecialchars($row['date_de_Depot']); ?></td>
+                                <td><?= htmlspecialchars($row['date']); ?></td>
                                 <td>
                                     <form action="update_status.php" method="POST">
                                         <input type="hidden" name="id_file" value="<?= htmlspecialchars($row['id_file']); ?>">
@@ -141,7 +154,6 @@ $submissions = fetchSubmissions();
                         </tr>
                     <?php endif; ?>
                 </tbody>
-
             </table>
         </div>
     </main>

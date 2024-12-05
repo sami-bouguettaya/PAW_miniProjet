@@ -5,7 +5,6 @@ require_once '../db/etudiant_fct.php';
 // Vérifie si l'utilisateur est connecté
 if (!isset($_SESSION['student_matricule'])) {
     header("Location: ../db/login.php");
-    exit();
 }
 
 $student_matricule = $_SESSION['student_matricule'];
@@ -13,35 +12,29 @@ $student_name = $_SESSION['student_name'];
 
 // Récupère les demandes
 $requests = fetchStudentRequests($student_matricule);
-
 // Gestion du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
+
     $filename = $_POST['filename'];
     $filetype = $_POST['filetype'];
-
-    // Vérifie si un fichier a été envoyé
-    if (isset($_FILES['filedata']) && $_FILES['filedata']['error'] === UPLOAD_ERR_OK) {
-        $fileTmpPath = $_FILES['filedata']['tmp_name'];
-        $fileName = $_FILES['filedata']['name'];
-        $uploadDir = 'uploads/';
-        $filePath = $uploadDir . basename($fileName);
-
-        // Déplace le fichier
-        if (move_uploaded_file($fileTmpPath, $filePath)) {
-            $status = 'Pending';
-            $date_de_Depot = date('Y-m-d');
-            $message = insertStudentRequest($student_matricule, $filename, $filetype, $status, $date_de_Depot, $filePath);
-        } else {
-            $message = "Erreur lors de l'envoi du fichier.";
-        }
+    $status = "Pending"; // Statut par défaut
+    if (isset($_SESSION['admin_id'])) {
+        $id_admin = $_SESSION['admin_id'];
     } else {
-        $message = "Veuillez sélectionner un fichier valide.";
+        echo "L'administrateur deconnecter ";
     }
-}
+    // Appel de la fonction d'insertion
+    try {
+        insertStudentRequest($id_admin, $student_matricule, $filename, $filetype, $status); // Dernier paramètre null si pas de fichier binaire
+        $message = "Request submitted successfully!";
+    } catch (Exception $e) {
+        $message = "Error: " . $e->getMessage();
+    }}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -112,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <td><?= htmlspecialchars($request['filename']); ?></td>
                                     <td><?= htmlspecialchars($request['filetype']); ?></td>
                                     <td><?= htmlspecialchars($request['status']); ?></td>
-                                    <td><?= htmlspecialchars($request['date_de_Depot']); ?></td>
+                                    <td><?= htmlspecialchars($request['date']); ?></td>
                                 </tr>
                             <?php } 
                         } else { ?>
@@ -139,10 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label for="filename" class="form-label">File Name</label>
                         <input type="text" id="filename" name="filename" class="form-control" required>
                     </div>
-                    <div class="mb-4">
-                        <label for="filedata" class="form-label">Upload File</label>
-                        <input type="file" id="filedata" name="filedata" class="form-control" required>
-                    </div>
+                 
                     <div class="text-center">
                         <button type="submit" class="btn btn-success">Submit Request</button>
                     </div>

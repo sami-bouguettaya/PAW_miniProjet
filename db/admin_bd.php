@@ -1,16 +1,16 @@
 <?php
-// Database connection
+
 include("db.php");
-// Function to fetch submissions from the database
-function fetchSubmissions()
+
+function fetchSubmissions($sort = 'name')
 {
     global $conn;
 
-    // Variables de filtre
+
     $filterName = $_GET['filter_name'] ?? '';
     $filterStatus = $_GET['filter_status'] ?? '';
 
-    // Construction de la requête SQL avec filtres
+   
     $sql = "
         SELECT 
             e.name, 
@@ -18,7 +18,7 @@ function fetchSubmissions()
             d.filename, 
             d.filetype, 
             d.status, 
-            d.date_de_Depot, 
+            d.date, 
             d.id_file, 
             d.id_etud
         FROM documents d
@@ -26,7 +26,7 @@ function fetchSubmissions()
         WHERE 1
     ";
 
-    // Ajout des filtres
+  
     $params = [];
     if ($filterName) {
         $sql .= " AND (e.name LIKE ? OR e.last_name LIKE ?)";
@@ -38,10 +38,17 @@ function fetchSubmissions()
         $params[] = $filterStatus;
     }
 
-    // Préparation et exécution de la requête
+    // Ajout du tri
+    if ($sort === 'date') {
+        $sql .= " ORDER BY d.date DESC"; // Tri par date 
+    } else {
+        $sql .= " ORDER BY e.name ASC, e.last_name ASC"; // Tri par ordre alphabétique
+    }
+
+   
     $stmt = $conn->prepare($sql);
     if ($params) {
-        $types = str_repeat('s', count($params)); // Détermine les types de données
+        $types = str_repeat('s', count($params)); 
         $stmt->bind_param($types, ...$params);
     }
     $stmt->execute();
