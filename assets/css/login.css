@@ -40,14 +40,14 @@ body{
 }
 
 .container a{
-    color: #333;
+    color: hsl(355, 95%, 62%);
     font-size: 13px;
     text-decoration: none;
     margin: 15px 0 10px;
 }
 
 .container button{
-    background-color: #90CAF9;
+    background-color:hsl(355, 95%, 62%);
     color: #fff;
     font-size: 12px;
     padding: 10px 45px;
@@ -161,7 +161,7 @@ body{
 }
 
 .toggle{
-    background-color: hsl(36, 88%, 53%);
+    background-color: hsl(355, 95%, 62%);
     height: 100%;
     background: linear-gradient(to right, hsl(355, 95%, 62%), #90CAF9);
     color: #fff;
